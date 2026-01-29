@@ -1,0 +1,15 @@
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\bin\Debug\net6.0-windows\Inventario-CRUD-CSharp.exe
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\bin\Debug\net6.0-windows\Inventario-CRUD-CSharp.deps.json
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\bin\Debug\net6.0-windows\Inventario-CRUD-CSharp.runtimeconfig.json
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\bin\Debug\net6.0-windows\Inventario-CRUD-CSharp.dll
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\bin\Debug\net6.0-windows\Inventario-CRUD-CSharp.pdb
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\obj\Debug\net6.0-windows\Inventario-CRUD-CSharp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\obj\Debug\net6.0-windows\Inventario-CRUD-CSharp.AssemblyInfoInputs.cache
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\obj\Debug\net6.0-windows\Inventario-CRUD-CSharp.AssemblyInfo.cs
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\obj\Debug\net6.0-windows\Inventario-CRUD-CSharp.csproj.CoreCompileInputs.cache
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\obj\Debug\net6.0-windows\Inventario-CRUD-CSharp.sourcelink.json
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\obj\Debug\net6.0-windows\Inventario-CRUD-CSharp.dll
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\obj\Debug\net6.0-windows\refint\Inventario-CRUD-CSharp.dll
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\obj\Debug\net6.0-windows\Inventario-CRUD-CSharp.pdb
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\obj\Debug\net6.0-windows\Inventario-CRUD-CSharp.genruntimeconfig.cache
+C:\Users\josse\Escritorio\Inventario-CRUD-CSharp\obj\Debug\net6.0-windows\ref\Inventario-CRUD-CSharp.dll

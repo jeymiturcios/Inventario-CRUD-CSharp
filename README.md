@@ -360,4 +360,4 @@ Este proyecto es de código abierto y está disponible para uso en portafolios p
 
 ---
 
-Desarrollado c usando C# y Windows Forms
+Desarrollado  usando C# y Windows Forms

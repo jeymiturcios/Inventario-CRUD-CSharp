@@ -45,25 +45,36 @@ namespace CRUD_Inventario
 
         private void btnAgregar_Click(object sender, EventArgs e)
         {
-            try
+            // Validar campos vacíos
+            if (string.IsNullOrWhiteSpace(txtID.Text) ||
+                string.IsNullOrWhiteSpace(txtNombre.Text) ||
+                string.IsNullOrWhiteSpace(txtCantidad.Text) ||
+                string.IsNullOrWhiteSpace(txtPrecio.Text))
             {
-                Producto p = new Producto()
-                {
-                    ID = int.Parse(txtID.Text),
-                    Nombre = txtNombre.Text,
-                    Cantidad = int.Parse(txtCantidad.Text),
-                    Precio = decimal.Parse(txtPrecio.Text)
-                };
+                MessageBox.Show("Complete todos los campos", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-                inventario.Add(p);
-                RefrescarGrid();
-                LimpiarCampos();
-            }
-            catch (Exception ex)
+            // Validar ID duplicado
+            int id = int.Parse(txtID.Text);
+            if (inventario.Any(p => p.ID == id))
             {
-                MessageBox.Show("Error al agregar: " + ex.Message);
+                MessageBox.Show("El ID ya existe", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
-        }
+
+            Producto p = new Producto()
+            {
+                ID = id,
+                Nombre = txtNombre.Text,
+                Cantidad = int.Parse(txtCantidad.Text),
+                Precio = decimal.Parse(txtPrecio.Text)
+            };
+
+            inventario.Add(p);
+            RefrescarGrid();
+            LimpiarCampos();
+        
 
         private void btnEditar_Click(object sender, EventArgs e)
         {
@@ -86,18 +97,27 @@ namespace CRUD_Inventario
 
         private void btnEliminar_Click(object sender, EventArgs e)
         {
-            if (dgvInventario.CurrentRow != null)
+            if (dgvInventario.CurrentRow == null)
+            {
+                MessageBox.Show("Seleccione un producto", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            DialogResult confirmacion = MessageBox.Show(
+                "¿Está seguro de eliminar este producto?",
+                "Confirmar eliminación",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (confirmacion == DialogResult.Yes)
             {
                 int index = dgvInventario.CurrentRow.Index;
                 inventario.RemoveAt(index);
                 RefrescarGrid();
                 LimpiarCampos();
             }
-            else
-            {
-                MessageBox.Show("Seleccione un producto para eliminar");
-            }
-        }
+        
 
         private void btnLimpiar_Click(object sender, EventArgs e)
         {

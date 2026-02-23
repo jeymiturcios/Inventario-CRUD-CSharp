@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Inventario-CRUD-CSharp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d2923d756f36ff10fdcaef5f06b6e7834caffdaa")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e879994abbed1e1a77f8d30416548e0482bece28")]
 [assembly: System.Reflection.AssemblyProductAttribute("Inventario-CRUD-CSharp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Inventario-CRUD-CSharp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

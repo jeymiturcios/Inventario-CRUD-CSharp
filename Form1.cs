@@ -1,36 +1,53 @@
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
+using CRUD_Inventario.Models;
+using CRUD_Inventario.Services;
+using CRUD_Inventario.Validators;
 
 namespace CRUD_Inventario
 {
     public partial class Form1 : Form
     {
-        List<Producto> inventario = new List<Producto>();
+        private readonly InventarioService _inventarioService;
+        private Producto? _productoSeleccionado;
 
         public Form1()
         {
             InitializeComponent();
-            dgvInventario.DataSource = inventario;
-
             
+            // Inicializar servicio
+            _inventarioService = new InventarioService();
+            
+            // Configurar DataGridView
+            ConfigurarDataGridView();
+            
+            // Enlazar datos
+            dgvInventario.DataSource = _inventarioService.ObtenerInventario();
+            
+            // Suscribir eventos
+            SuscribirEventos();
+        }
+
+        private void ConfigurarDataGridView()
+        {
             dgvInventario.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvInventario.MultiSelect = false;
             dgvInventario.ReadOnly = true;
             dgvInventario.AllowUserToAddRows = false;
-
-           
-            dgvInventario.CellClick += dgvInventario_CellClick;
-            btnAgregar.Click += btnAgregar_Click;
-            btnEditar.Click += btnEditar_Click;
-            btnEliminar.Click += btnEliminar_Click;
-            btnLimpiar.Click += btnLimpiar_Click;
+            dgvInventario.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
-        private void RefrescarGrid()
+        private void SuscribirEventos()
         {
-            dgvInventario.DataSource = null;
-            dgvInventario.DataSource = inventario;
+            dgvInventario.CellClick += DgvInventario_CellClick;
+            dgvInventario.SelectionChanged += DgvInventario_SelectionChanged;
+            btnAgregar.Click += BtnAgregar_Click;
+            btnEditar.Click += BtnEditar_Click;
+            btnEliminar.Click += BtnEliminar_Click;
+            btnLimpiar.Click += BtnLimpiar_Click;
+            
+            // Limpiar selección al hacer clic fuera del grid
+            this.Click += (s, e) => LimpiarSeleccion();
         }
 
         private void LimpiarCampos()
@@ -39,102 +56,224 @@ namespace CRUD_Inventario
             txtNombre.Clear();
             txtCantidad.Clear();
             txtPrecio.Clear();
+            _productoSeleccionado = null;
         }
 
-        // ------------------- BOTONES -------------------
-
-        private void btnAgregar_Click(object sender, EventArgs e)
+        private void LimpiarSeleccion()
         {
-            // Validar campos vac�os
-            if (string.IsNullOrWhiteSpace(txtID.Text) ||
-                string.IsNullOrWhiteSpace(txtNombre.Text) ||
-                string.IsNullOrWhiteSpace(txtCantidad.Text) ||
-                string.IsNullOrWhiteSpace(txtPrecio.Text))
-            {
-                MessageBox.Show("Complete todos los campos", "Validaci�n", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // Validar ID duplicado
-            int id = int.Parse(txtID.Text);
-            if (inventario.Any(p => p.ID == id))
-            {
-                MessageBox.Show("El ID ya existe", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            Producto p = new Producto()
-            {
-                ID = id,
-                Nombre = txtNombre.Text,
-                Cantidad = int.Parse(txtCantidad.Text),
-                Precio = decimal.Parse(txtPrecio.Text)
-            };
-
-            inventario.Add(p);
-            RefrescarGrid();
-            LimpiarCampos();
-        
-
-        private void btnEditar_Click(object sender, EventArgs e)
-        {
-            if (dgvInventario.CurrentRow != null)
-            {
-                int index = dgvInventario.CurrentRow.Index;
-                inventario[index].ID = int.Parse(txtID.Text);
-                inventario[index].Nombre = txtNombre.Text;
-                inventario[index].Cantidad = int.Parse(txtCantidad.Text);
-                inventario[index].Precio = decimal.Parse(txtPrecio.Text);
-
-                RefrescarGrid();
-                LimpiarCampos();
-            }
-            else
-            {
-                MessageBox.Show("Seleccione un producto para editar");
-            }
-        }
-
-        private void btnEliminar_Click(object sender, EventArgs e)
-        {
-            if (dgvInventario.CurrentRow == null)
-            {
-                MessageBox.Show("Seleccione un producto", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            DialogResult confirmacion = MessageBox.Show(
-                "�Est� seguro de eliminar este producto?",
-                "Confirmar eliminaci�n",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-
-            if (confirmacion == DialogResult.Yes)
-            {
-                int index = dgvInventario.CurrentRow.Index;
-                inventario.RemoveAt(index);
-                RefrescarGrid();
-                LimpiarCampos();
-            }
-        
-
-        private void btnLimpiar_Click(object sender, EventArgs e)
-        {
+            if (dgvInventario.Focused) return;
+            dgvInventario.ClearSelection();
             LimpiarCampos();
         }
 
-        // ------------------- SELECCIONAR FILA -------------------
+        // ------------------- EVENTOS DEL DATAGRIDVIEW -------------------
 
-        private void dgvInventario_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void DgvInventario_CellClick(object? sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
-                txtID.Text = dgvInventario.Rows[e.RowIndex].Cells[0].Value.ToString();
-                txtNombre.Text = dgvInventario.Rows[e.RowIndex].Cells[1].Value.ToString();
-                txtCantidad.Text = dgvInventario.Rows[e.RowIndex].Cells[2].Value.ToString();
-                txtPrecio.Text = dgvInventario.Rows[e.RowIndex].Cells[3].Value.ToString();
+                CargarProductoEnFormulario(e.RowIndex);
             }
+        }
+
+        private void DgvInventario_SelectionChanged(object? sender, EventArgs e)
+        {
+            if (dgvInventario.SelectedRows.Count > 0)
+            {
+                CargarProductoEnFormulario(dgvInventario.SelectedRows[0].Index);
+            }
+        }
+
+        private void CargarProductoEnFormulario(int indiceFila)
+        {
+            try
+            {
+                var producto = dgvInventario.Rows[indiceFila].DataBoundItem as Producto;
+                if (producto != null)
+                {
+                    _productoSeleccionado = producto;
+                    txtID.Text = producto.ID.ToString();
+                    txtNombre.Text = producto.Nombre;
+                    txtCantidad.Text = producto.Cantidad.ToString();
+                    txtPrecio.Text = producto.Precio.ToString("F2");
+                }
+            }
+            catch (Exception ex)
+            {
+                MostrarError($"Error al cargar producto: {ex.Message}");
+            }
+        }
+
+        // ------------------- EVENTOS DE BOTONES -------------------
+
+        private void BtnAgregar_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                // Validar campos del formulario
+                var (esValido, mensajeError, producto) = ValidadorProducto.ValidarCamposFormulario(
+                    txtID.Text,
+                    txtNombre.Text,
+                    txtCantidad.Text,
+                    txtPrecio.Text
+                );
+
+                if (!esValido || producto == null)
+                {
+                    MostrarAdvertencia(mensajeError);
+                    return;
+                }
+
+                // Intentar agregar producto
+                var (exito, mensaje) = _inventarioService.AgregarProducto(producto);
+
+                if (exito)
+                {
+                    LimpiarCampos();
+                    MostrarExito("Producto agregado correctamente.");
+                }
+                else
+                {
+                    MostrarError(mensaje);
+                }
+            }
+            catch (Exception ex)
+            {
+                MostrarError($"Error inesperado al agregar producto: {ex.Message}");
+            }
+        }
+
+        private void BtnEditar_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                if (_productoSeleccionado == null)
+                {
+                    MostrarAdvertencia("Por favor, seleccione un producto de la tabla para editar.");
+                    return;
+                }
+
+                // Validar campos del formulario
+                var (esValido, mensajeError, productoActualizado) = ValidadorProducto.ValidarCamposFormulario(
+                    txtID.Text,
+                    txtNombre.Text,
+                    txtCantidad.Text,
+                    txtPrecio.Text
+                );
+
+                if (!esValido || productoActualizado == null)
+                {
+                    MostrarAdvertencia(mensajeError);
+                    return;
+                }
+
+                // Intentar actualizar producto
+                var (exito, mensaje) = _inventarioService.ActualizarProducto(
+                    _productoSeleccionado,
+                    productoActualizado
+                );
+
+                if (exito)
+                {
+                    LimpiarCampos();
+                    MostrarExito("Producto actualizado correctamente.");
+                }
+                else
+                {
+                    MostrarError(mensaje);
+                }
+            }
+            catch (Exception ex)
+            {
+                MostrarError($"Error inesperado al editar producto: {ex.Message}");
+            }
+        }
+
+        private void BtnEliminar_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                if (_productoSeleccionado == null)
+                {
+                    MostrarAdvertencia("Por favor, seleccione un producto de la tabla para eliminar.");
+                    return;
+                }
+
+                // Confirmar eliminación
+                DialogResult confirmacion = MessageBox.Show(
+                    $"¿Está seguro de eliminar el producto '{_productoSeleccionado.Nombre}' (ID: {_productoSeleccionado.ID})?",
+                    "Confirmar Eliminación",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button2
+                );
+
+                if (confirmacion == DialogResult.Yes)
+                {
+                    bool eliminado = _inventarioService.EliminarProducto(_productoSeleccionado);
+
+                    if (eliminado)
+                    {
+                        LimpiarCampos();
+                        MostrarExito("Producto eliminado correctamente.");
+                    }
+                    else
+                    {
+                        MostrarError("No se pudo eliminar el producto.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MostrarError($"Error inesperado al eliminar producto: {ex.Message}");
+            }
+        }
+
+        private void BtnLimpiar_Click(object? sender, EventArgs e)
+        {
+            LimpiarCampos();
+            dgvInventario.ClearSelection();
+        }
+
+        // ------------------- MÉTODOS AUXILIARES -------------------
+
+        private void MostrarError(string mensaje)
+        {
+            MessageBox.Show(
+                mensaje,
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
+
+        private void MostrarAdvertencia(string mensaje)
+        {
+            MessageBox.Show(
+                mensaje,
+                "Advertencia",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            );
+        }
+
+        private void MostrarExito(string mensaje)
+        {
+            MessageBox.Show(
+                mensaje,
+                "Éxito",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+
+        // ------------------- EVENTOS DEL FORMULARIO -------------------
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            // Los datos se guardan automáticamente en cada operación
+            // pero podemos agregar una confirmación si hay cambios sin guardar
+            base.OnFormClosing(e);
         }
     }
 }
